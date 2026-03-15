@@ -26,7 +26,10 @@ This is an **AI Sales CRM** built for the [Notion MCP Challenge](https://dev.to/
 - The MCP client is a module-level singleton in `src/lib/mcp-client.ts`
 - It uses `StreamableHTTPClientTransport` to connect to the Notion MCP server at `process.env.MCP_SERVER_URL`
 - The MCP server exposes 22 Notion tools (search, query DB, create/update pages, etc.)
-- Since v2.0.0, database operations use `data_source_id` (not `database_id`)
+- Since v2.0.0, database operations use `data_source_id` (not `database_id`) for queries
+- **IMPORTANT**: `database_id` and `data_source_id` are DIFFERENT IDs:
+  - `NOTION_DB.*` = database IDs → used for `API-post-page` (`parent: { database_id }`)
+  - `NOTION_DS.*` = data source IDs → used for `API-query-data-source` (`data_source_id`)
 - Always handle reconnection on errors
 
 ### Gemini AI
@@ -120,10 +123,14 @@ All environment variables are server-side only (never prefixed with `NEXT_PUBLIC
 GEMINI_API_KEY=           # Google Gemini API key
 NOTION_TOKEN=             # Notion integration token (ntn_...)
 MCP_SERVER_URL=           # Notion MCP server URL (http://localhost:3001/mcp)
-NOTION_CONTACTS_DB_ID=    # Contacts database ID
+NOTION_CONTACTS_DB_ID=    # Contacts database ID (for creating pages)
 NOTION_DEALS_DB_ID=       # Deals database ID
 NOTION_ACTIVITIES_DB_ID=  # Activities database ID
 NOTION_COMPANIES_DB_ID=   # Companies database ID
+NOTION_CONTACTS_DS_ID=    # Contacts data source ID (for querying)
+NOTION_DEALS_DS_ID=       # Deals data source ID
+NOTION_ACTIVITIES_DS_ID=  # Activities data source ID
+NOTION_COMPANIES_DS_ID=   # Companies data source ID
 ```
 
 ## Common Patterns
@@ -131,12 +138,13 @@ NOTION_COMPANIES_DB_ID=   # Companies database ID
 ### Querying Notion via MCP
 ```typescript
 import { getMcpClient } from "@/lib/mcp-client";
+import { NOTION_DS } from "@/lib/notion-schema";
 
 const client = await getMcpClient();
 const result = await client.callTool({
-  name: "notion-query-database",
+  name: "API-query-data-source",
   arguments: {
-    data_source_id: process.env.NOTION_DEALS_DB_ID,
+    data_source_id: NOTION_DS.deals,
     filter: { property: "Stage", select: { equals: "Proposal" } },
   },
 });

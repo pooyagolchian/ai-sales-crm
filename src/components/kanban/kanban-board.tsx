@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import {
 	DndContext,
 	type DragEndEvent,
@@ -10,10 +9,11 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { KanbanColumn } from "./kanban-column";
-import { DealCard } from "./deal-card";
+import { useCallback, useState } from "react";
 import type { Deal, DealStage } from "@/types";
 import { DEAL_STAGES } from "@/types";
+import { DealCard } from "./deal-card";
+import { KanbanColumn } from "./kanban-column";
 
 interface KanbanBoardProps {
 	initialDeals: Deal[];
@@ -80,15 +80,11 @@ export function KanbanBoard({ initialDeals, onDealClick }: KanbanBoardProps) {
 
 				if (!res.ok) {
 					// Revert on failure
-					setDeals((prev) =>
-						prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)),
-					);
+					setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)));
 				}
 			} catch {
 				// Revert on error
-				setDeals((prev) =>
-					prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)),
-				);
+				setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)));
 			} finally {
 				setUpdating(null);
 			}
@@ -111,9 +107,7 @@ export function KanbanBoard({ initialDeals, onDealClick }: KanbanBoardProps) {
 				))}
 			</div>
 
-			<DragOverlay>
-				{activeDeal ? <DealCard deal={activeDeal} isDragging /> : null}
-			</DragOverlay>
+			<DragOverlay>{activeDeal ? <DealCard deal={activeDeal} isDragging /> : null}</DragOverlay>
 		</DndContext>
 	);
 }

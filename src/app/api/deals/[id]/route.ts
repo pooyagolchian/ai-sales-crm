@@ -5,10 +5,7 @@ import type { DealStage, Priority } from "@/types";
 
 export const runtime = "nodejs";
 
-export async function PATCH(
-	request: Request,
-	{ params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { id } = await params;
 		const body = await request.json();
@@ -39,7 +36,7 @@ export async function PATCH(
 		}
 
 		const result = await callMcpTool<{ id: string; properties: Record<string, unknown> }>(
-			"notion-update-page",
+			"API-patch-page",
 			{
 				page_id: id,
 				properties,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { callMcpTool, resetMcpClient } from "@/lib/mcp-client";
-import { NOTION_DB } from "@/lib/notion-schema";
 import { parseContact } from "@/lib/notion-helpers";
+import { NOTION_DB, NOTION_DS } from "@/lib/notion-schema";
 import type { Contact } from "@/types";
 
 export const runtime = "nodejs";
@@ -12,8 +12,8 @@ interface NotionQueryResult {
 
 export async function GET() {
 	try {
-		const result = await callMcpTool<NotionQueryResult>("notion-query-database", {
-			data_source_id: NOTION_DB.contacts,
+		const result = await callMcpTool<NotionQueryResult>("API-query-data-source", {
+			data_source_id: NOTION_DS.contacts,
 		});
 
 		const contacts: Contact[] = (result?.results ?? []).map((page) =>
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
 		}
 
 		const result = await callMcpTool<{ id: string; properties: Record<string, unknown> }>(
-			"notion-create-page",
+			"API-post-page",
 			{
-				data_source_id: NOTION_DB.contacts,
+				parent: { database_id: NOTION_DB.contacts },
 				properties,
 			},
 		);

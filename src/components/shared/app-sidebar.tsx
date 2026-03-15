@@ -22,7 +22,9 @@ export function AppSidebar() {
 				<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
 					AI
 				</div>
-				<span className="text-lg font-semibold">Sales CRM</span>
+				<span className="font-[family-name:var(--font-display)] text-lg font-semibold tracking-tight">
+					Sales CRM
+				</span>
 			</div>
 
 			{/* Navigation */}

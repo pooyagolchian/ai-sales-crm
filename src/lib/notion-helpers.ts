@@ -2,7 +2,7 @@
 // Notion Response Parsing Helpers
 // ============================================================
 
-import type { Deal, DealStage, Priority, Contact } from "@/types";
+import type { Contact, Deal, DealStage, Priority } from "@/types";
 
 type NotionProperty = Record<string, unknown>;
 
@@ -63,9 +63,10 @@ export function parseDeal(page: { id: string; properties: Record<string, NotionP
 }
 
 // -- Parse a Notion page object into a Contact --
-export function parseContact(
-	page: { id: string; properties: Record<string, NotionProperty> },
-): Contact {
+export function parseContact(page: {
+	id: string;
+	properties: Record<string, NotionProperty>;
+}): Contact {
 	const p = page.properties;
 	return {
 		id: page.id,
@@ -79,4 +80,4 @@ export function parseContact(
 	};
 }
 
-export { getTitle, getRichText, getSelect, getNumber, getDate, getEmail, getRelation, getUrl };
+export { getDate, getEmail, getNumber, getRelation, getRichText, getSelect, getTitle, getUrl };

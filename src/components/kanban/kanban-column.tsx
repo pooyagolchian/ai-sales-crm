@@ -1,10 +1,10 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { DealCard } from "./deal-card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Deal, DealStage } from "@/types";
-import { Badge } from "@/components/ui/badge";
+import { DealCard } from "./deal-card";
 
 interface KanbanColumnProps {
 	stage: DealStage;

@@ -1,6 +1,10 @@
 // ============================================================
 // MCP Client Singleton — Connects to Notion MCP Server
 // ============================================================
+
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
@@ -11,13 +15,33 @@ function getMcpServerUrl(): string {
 	return process.env.MCP_SERVER_URL || "http://localhost:3001/mcp";
 }
 
+function getMcpAuthToken(): string | undefined {
+	try {
+		const tmp = tmpdir();
+		const files = readdirSync(tmp).filter((f) => f.startsWith(".notion-mcp-auth-token-"));
+		if (files.length === 0) return undefined;
+		// Use the most recently modified token file
+		const tokenFile = files
+			.map((f) => ({ name: f, mtime: statSync(join(tmp, f)).mtimeMs }))
+			.sort((a, b) => b.mtime - a.mtime)[0].name;
+		return readFileSync(join(tmp, tokenFile), "utf-8").trim();
+	} catch {
+		return undefined;
+	}
+}
+
 async function createClient(): Promise<Client> {
 	const mcpClient = new Client({
 		name: "ai-sales-crm",
 		version: "1.0.0",
 	});
 
-	const transport = new StreamableHTTPClientTransport(new URL(getMcpServerUrl()));
+	const url = new URL(getMcpServerUrl());
+	const token = getMcpAuthToken();
+
+	const transport = new StreamableHTTPClientTransport(url, {
+		requestInit: token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
+	});
 
 	await mcpClient.connect(transport);
 	return mcpClient;

@@ -1,11 +1,11 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, DollarSign, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Deal, Priority } from "@/types";
-import { Calendar, DollarSign, Loader2 } from "lucide-react";
 
 interface DealCardProps {
 	deal: Deal;
@@ -57,9 +57,7 @@ export function DealCard({ deal, isDragging, isUpdating, onClick }: DealCardProp
 					{isUpdating && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
 				</div>
 
-				{deal.contactName && (
-					<p className="text-xs text-muted-foreground">{deal.contactName}</p>
-				)}
+				{deal.contactName && <p className="text-xs text-muted-foreground">{deal.contactName}</p>}
 
 				<div className="flex items-center gap-2 flex-wrap">
 					{deal.value > 0 && (

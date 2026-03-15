@@ -10,7 +10,7 @@ function requireEnv(name: string): string {
 	return value;
 }
 
-// -- Database IDs --
+// -- Database IDs (for creating pages via API-post-page) --
 export const NOTION_DB = {
 	get contacts() {
 		return requireEnv("NOTION_CONTACTS_DB_ID");
@@ -23,6 +23,22 @@ export const NOTION_DB = {
 	},
 	get companies() {
 		return requireEnv("NOTION_COMPANIES_DB_ID");
+	},
+} as const;
+
+// -- Data Source IDs (for querying via API-query-data-source) --
+export const NOTION_DS = {
+	get contacts() {
+		return requireEnv("NOTION_CONTACTS_DS_ID");
+	},
+	get deals() {
+		return requireEnv("NOTION_DEALS_DS_ID");
+	},
+	get activities() {
+		return requireEnv("NOTION_ACTIVITIES_DS_ID");
+	},
+	get companies() {
+		return requireEnv("NOTION_COMPANIES_DS_ID");
 	},
 } as const;
 
