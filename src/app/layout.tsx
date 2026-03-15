@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
 				{children}
+				<Toaster />
 			</body>
 		</html>
 	);

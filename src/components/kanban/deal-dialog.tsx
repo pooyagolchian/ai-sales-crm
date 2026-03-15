@@ -2,6 +2,7 @@
 
 import { Bot, Loader2, Mail, Phone } from "lucide-react";
 import { useState } from "react";
+import Markdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -249,9 +250,28 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 											<p className="mb-2 text-xs text-muted-foreground">
 												To: {ghostwriterResult.contactName}
 											</p>
-											<pre className="whitespace-pre-wrap text-sm">
-												{ghostwriterResult.emailDraft}
-											</pre>
+											<div className="text-sm leading-relaxed">
+												<Markdown
+													components={{
+														p: ({ children }) => <p className="my-1.5">{children}</p>,
+														strong: ({ children }) => (
+															<strong className="font-semibold">{children}</strong>
+														),
+														ul: ({ children }) => (
+															<ul className="my-1.5 list-disc space-y-0.5 pl-5">
+																{children}
+															</ul>
+														),
+														ol: ({ children }) => (
+															<ol className="my-1.5 list-decimal space-y-0.5 pl-5">
+																{children}
+															</ol>
+														),
+													}}
+												>
+													{ghostwriterResult.emailDraft}
+												</Markdown>
+											</div>
 										</CardContent>
 									</Card>
 								)}

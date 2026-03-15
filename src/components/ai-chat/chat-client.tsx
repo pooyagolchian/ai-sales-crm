@@ -2,6 +2,7 @@
 
 import { Bot, Loader2, Send, User } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import Markdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -146,7 +147,44 @@ export function ChatClient() {
 											msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
 										)}
 									>
+										{msg.role === "assistant" ? (
+										<Markdown
+											components={{
+												ul: ({ children }) => (
+													<ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>
+												),
+												ol: ({ children }) => (
+													<ol className="my-2 list-decimal space-y-1 pl-5">{children}</ol>
+												),
+												li: ({ children }) => (
+													<li className="leading-relaxed">{children}</li>
+												),
+												p: ({ children }) => <p className="my-1.5 leading-relaxed">{children}</p>,
+												strong: ({ children }) => (
+													<strong className="font-semibold">{children}</strong>
+												),
+												h1: ({ children }) => (
+													<h1 className="mt-3 mb-1.5 text-base font-bold">{children}</h1>
+												),
+												h2: ({ children }) => (
+													<h2 className="mt-2.5 mb-1 text-sm font-bold">{children}</h2>
+												),
+												h3: ({ children }) => (
+													<h3 className="mt-2 mb-1 text-sm font-semibold">{children}</h3>
+												),
+												code: ({ children }) => (
+													<code className="rounded bg-black/5 px-1 py-0.5 text-xs dark:bg-white/10">
+														{children}
+													</code>
+												),
+												hr: () => <hr className="my-3 border-border" />,
+											}}
+										>
+											{msg.content}
+										</Markdown>
+									) : (
 										<div className="whitespace-pre-wrap">{msg.content}</div>
+									)}
 									</div>
 									{msg.role === "user" && (
 										<div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
