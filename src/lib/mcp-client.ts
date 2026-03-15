@@ -32,7 +32,7 @@ function getMcpAuthToken(): string | undefined {
 
 async function createClient(): Promise<Client> {
 	const mcpClient = new Client({
-		name: "ai-sales-crm",
+		name: "revops-ai",
 		version: "1.0.0",
 	});
 

@@ -9,7 +9,8 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { Deal, DealStage } from "@/types";
 import { DEAL_STAGES } from "@/types";
 import { DealCard } from "./deal-card";
@@ -33,6 +34,11 @@ export function KanbanBoard({ initialDeals, onDealClick }: KanbanBoardProps) {
 	const [deals, setDeals] = useState<Deal[]>(initialDeals);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [updating, setUpdating] = useState<string | null>(null);
+
+	// Sync with parent when initialDeals changes (e.g. after save/create)
+	useEffect(() => {
+		setDeals(initialDeals);
+	}, [initialDeals]);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -79,12 +85,14 @@ export function KanbanBoard({ initialDeals, onDealClick }: KanbanBoardProps) {
 				});
 
 				if (!res.ok) {
-					// Revert on failure
 					setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)));
+					toast.error("Failed to move deal");
+				} else {
+					toast.success(`Moved "${deal.name}" to ${newStage}`);
 				}
 			} catch {
-				// Revert on error
 				setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: deal.stage } : d)));
+				toast.error("Failed to move deal");
 			} finally {
 				setUpdating(null);
 			}

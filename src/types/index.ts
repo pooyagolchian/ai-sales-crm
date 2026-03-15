@@ -1,5 +1,5 @@
 // ============================================================
-// Types for AI Sales CRM — Notion MCP Challenge
+// Types for RevOps AI — Notion MCP Challenge
 // ============================================================
 
 // -- Deal Pipeline Stages --

@@ -38,6 +38,7 @@ yarn-error.log*
 .instructions.md
 .github/copilot-instructions.md
 PLAN.md
+SUBMISSION.md
 
 # vercel
 .vercel

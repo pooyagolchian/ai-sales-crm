@@ -3,6 +3,7 @@
 import { Bot, Loader2, Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import Markdown from "react-markdown";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -68,8 +69,9 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 			if (!res.ok) throw new Error("Failed to generate briefing");
 			const data = await res.json();
 			setBriefing(data);
+			toast.success("Briefing generated");
 		} catch {
-			// User sees the button stops spinning
+			toast.error("Failed to generate briefing");
 		} finally {
 			setBriefingLoading(false);
 		}
@@ -87,8 +89,9 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 			if (!res.ok) throw new Error("Failed to generate email");
 			const data = await res.json();
 			setGhostwriterResult(data);
+			toast.success("Email draft generated");
 		} catch {
-			// User sees the button stops spinning
+			toast.error("Failed to generate email");
 		} finally {
 			setGhostwriterLoading(false);
 		}
@@ -126,8 +129,9 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 			const data = await res.json();
 			onSave(data.deal);
 			onOpenChange(false);
+			toast.success(deal?.id ? "Deal updated" : "Deal created");
 		} catch {
-			// Error handling via toast would go here
+			toast.error("Failed to save deal");
 		} finally {
 			setSaving(false);
 		}
@@ -258,14 +262,10 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 															<strong className="font-semibold">{children}</strong>
 														),
 														ul: ({ children }) => (
-															<ul className="my-1.5 list-disc space-y-0.5 pl-5">
-																{children}
-															</ul>
+															<ul className="my-1.5 list-disc space-y-0.5 pl-5">{children}</ul>
 														),
 														ol: ({ children }) => (
-															<ol className="my-1.5 list-decimal space-y-0.5 pl-5">
-																{children}
-															</ol>
+															<ol className="my-1.5 list-decimal space-y-0.5 pl-5">{children}</ol>
 														),
 													}}
 												>

@@ -7,17 +7,26 @@ import {
 	ChevronUp,
 	Loader2,
 	Mail,
+	Plus,
 	RefreshCw,
 	Search,
 	Sparkles,
 	User,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -57,6 +66,17 @@ export function LeadsClient() {
 
 	// Contact detail dialog
 	const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
+	// New contact dialog
+	const [showNewContact, setShowNewContact] = useState(false);
+	const [newContact, setNewContact] = useState({
+		name: "",
+		email: "",
+		company: "",
+		role: "",
+		source: "",
+	});
+	const [creating, setCreating] = useState(false);
 
 	const fetchContacts = useCallback(async () => {
 		setLoading(true);
@@ -133,8 +153,9 @@ export function LeadsClient() {
 					c.id === contact.id ? { ...c, leadScore: data.score, leadScoreNotes: data.reasoning } : c,
 				),
 			);
+			toast.success(`Scored ${contact.name}: ${data.score}/100`);
 		} catch {
-			// Silently handle - user sees the button isn't spinning anymore
+			toast.error(`Failed to score ${contact.name}`);
 		} finally {
 			setScoringId(null);
 		}
@@ -143,6 +164,31 @@ export function LeadsClient() {
 	const handleScoreAll = async () => {
 		for (const contact of contacts) {
 			await handleScoreContact(contact);
+		}
+	};
+
+	const handleCreateContact = async () => {
+		if (!newContact.name.trim()) {
+			toast.error("Name is required");
+			return;
+		}
+		setCreating(true);
+		try {
+			const res = await fetch("/api/contacts", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(newContact),
+			});
+			if (!res.ok) throw new Error("Failed to create contact");
+			const data = await res.json();
+			setContacts((prev) => [data.contact, ...prev]);
+			setShowNewContact(false);
+			setNewContact({ name: "", email: "", company: "", role: "", source: "" });
+			toast.success(`Created contact: ${data.contact.name}`);
+		} catch {
+			toast.error("Failed to create contact");
+		} finally {
+			setCreating(false);
 		}
 	};
 
@@ -218,6 +264,10 @@ export function LeadsClient() {
 					>
 						<Sparkles className="mr-2 h-4 w-4" />
 						Score All
+					</Button>
+					<Button size="sm" onClick={() => setShowNewContact(true)}>
+						<Plus className="mr-2 h-4 w-4" />
+						New Contact
 					</Button>
 				</div>
 			</div>
@@ -331,6 +381,77 @@ export function LeadsClient() {
 					</div>
 				</CardContent>
 			</Card>
+
+			{/* New Contact Dialog */}
+			<Dialog open={showNewContact} onOpenChange={setShowNewContact}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>New Contact</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-3">
+						<div>
+							<Label htmlFor="nc-name">Name *</Label>
+							<Input
+								id="nc-name"
+								value={newContact.name}
+								onChange={(e) => setNewContact((p) => ({ ...p, name: e.target.value }))}
+							/>
+						</div>
+						<div>
+							<Label htmlFor="nc-email">Email</Label>
+							<Input
+								id="nc-email"
+								type="email"
+								value={newContact.email}
+								onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))}
+							/>
+						</div>
+						<div>
+							<Label htmlFor="nc-company">Company</Label>
+							<Input
+								id="nc-company"
+								value={newContact.company}
+								onChange={(e) => setNewContact((p) => ({ ...p, company: e.target.value }))}
+							/>
+						</div>
+						<div>
+							<Label htmlFor="nc-role">Role</Label>
+							<Input
+								id="nc-role"
+								value={newContact.role}
+								onChange={(e) => setNewContact((p) => ({ ...p, role: e.target.value }))}
+							/>
+						</div>
+						<div>
+							<Label>Source</Label>
+							<Select
+								value={newContact.source}
+								onValueChange={(v) => setNewContact((p) => ({ ...p, source: v ?? "" }))}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select source" />
+								</SelectTrigger>
+								<SelectContent>
+									{LEAD_SOURCES.map((s) => (
+										<SelectItem key={s} value={s}>
+											{s}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setShowNewContact(false)}>
+							Cancel
+						</Button>
+						<Button onClick={handleCreateContact} disabled={creating}>
+							{creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+							Create
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			{/* Contact Detail Dialog */}
 			<Dialog

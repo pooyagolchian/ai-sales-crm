@@ -15,8 +15,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-	title: "AI Sales CRM — Notion MCP",
-	description: "AI-powered CRM using Notion as the data layer and Gemini as the brain",
+	title: "RevOps AI — Revenue Operations Platform",
+	description:
+		"AI-powered RevOps platform that builds and manages your AI sales team using Notion as the data layer and Gemini as the brain",
 };
 
 export default function RootLayout({

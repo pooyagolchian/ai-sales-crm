@@ -120,7 +120,10 @@ export function DashboardClient() {
 
 	return (
 		<div className="space-y-6">
-			<PageHeader title="Dashboard" description="Overview of your sales pipeline and key metrics" />
+			<PageHeader
+				title="Revenue Dashboard"
+				description="AI-powered overview of your pipeline, team performance, and key revenue metrics"
+			/>
 
 			{/* Metric Cards */}
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -180,16 +183,8 @@ export function DashboardClient() {
 														"bg-amber-500": stage === "Negotiation",
 														"bg-emerald-500": stage === "Closed Won",
 														"bg-red-400": stage === "Closed Lost",
-														"w-[5%]": pct > 0 && pct <= 10,
-														"w-[15%]": pct > 10 && pct <= 20,
-														"w-1/4": pct > 20 && pct <= 30,
-														"w-1/3": pct > 30 && pct <= 40,
-														"w-2/5": pct > 40 && pct <= 50,
-														"w-1/2": pct > 50 && pct <= 60,
-														"w-3/5": pct > 60 && pct <= 70,
-														"w-3/4": pct > 70 && pct <= 85,
-														"w-full": pct > 85,
 													})}
+													style={{ width: `${Math.max(pct, pct > 0 ? 2 : 0)}%` }}
 												/>
 											</div>
 										</div>
