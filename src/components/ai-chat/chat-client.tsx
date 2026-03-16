@@ -149,6 +149,23 @@ export function ChatClient() {
 									>
 										{msg.role === "assistant" ? (
 											<Markdown
+												allowedElements={[
+													"p",
+													"strong",
+													"em",
+													"ul",
+													"ol",
+													"li",
+													"h1",
+													"h2",
+													"h3",
+													"code",
+													"pre",
+													"hr",
+													"br",
+													"a",
+													"blockquote",
+												]}
 												components={{
 													ul: ({ children }) => (
 														<ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>

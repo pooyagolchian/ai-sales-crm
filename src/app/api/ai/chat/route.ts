@@ -25,7 +25,9 @@ export async function POST(request: Request) {
 		const historyContext =
 			history && history.length > 0
 				? history
-						.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${sanitizeForPrompt(m.content)}`)
+						.map(
+							(m) => `${m.role === "user" ? "User" : "Assistant"}: ${sanitizeForPrompt(m.content)}`,
+						)
 						.join("\n\n")
 				: "";
 
@@ -38,9 +40,6 @@ export async function POST(request: Request) {
 
 		return NextResponse.json({ response });
 	} catch (error) {
-		return NextResponse.json(
-			{ error: safeErrorMessage(error, "AI chat failed") },
-			{ status: 500 },
-		);
+		return NextResponse.json({ error: safeErrorMessage(error, "AI chat failed") }, { status: 500 });
 	}
 }

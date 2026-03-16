@@ -34,10 +34,7 @@ interface RateLimitResult {
  * Check if a request is allowed under the rate limit.
  * Uses IP-based identification via request headers.
  */
-export function checkRateLimit(
-	identifier: string,
-	config: RateLimitConfig,
-): RateLimitResult {
+export function checkRateLimit(identifier: string, config: RateLimitConfig): RateLimitResult {
 	const now = Date.now();
 	const entry = store.get(identifier);
 
@@ -68,6 +65,6 @@ export function getClientId(request: Request): string {
 
 // Rate limit presets
 export const RATE_LIMITS = {
-	ai: { maxRequests: 20, windowMs: 60_000 },       // 20 req/min for AI endpoints
-	data: { maxRequests: 100, windowMs: 60_000 },     // 100 req/min for data endpoints
+	ai: { maxRequests: 20, windowMs: 60_000 }, // 20 req/min for AI endpoints
+	data: { maxRequests: 100, windowMs: 60_000 }, // 100 req/min for data endpoints
 } as const;

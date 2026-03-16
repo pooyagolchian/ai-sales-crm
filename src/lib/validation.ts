@@ -3,17 +3,27 @@
 // ============================================================
 
 import { z } from "zod";
-import { DEAL_STAGES, PRIORITIES, ACTIVITY_TYPES, LEAD_SOURCES } from "@/types";
+import { ACTIVITY_TYPES, DEAL_STAGES, LEAD_SOURCES, PRIORITIES } from "@/types";
 
 // -- Notion ID format (UUID with or without dashes) --
-const notionIdSchema = z.string().regex(/^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i, "Invalid Notion page ID");
+const notionIdSchema = z
+	.string()
+	.regex(
+		/^[a-f0-9]{8}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{4}-?[a-f0-9]{12}$/i,
+		"Invalid Notion page ID",
+	);
 
 // -- ISO date format --
-const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z?)?$/, "Invalid date format");
+const isoDateSchema = z
+	.string()
+	.regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z?)?$/, "Invalid date format");
 
 // -- Safe text (strips HTML tags, limits length) --
 const safeText = (maxLength: number) =>
-	z.string().max(maxLength).transform((val) => val.replace(/<[^>]*>/g, ""));
+	z
+		.string()
+		.max(maxLength)
+		.transform((val) => val.replace(/<[^>]*>/g, ""));
 
 // ========================
 // API Route Schemas
@@ -74,16 +84,21 @@ export const scoreSchema = z.object({
 	contactId: notionIdSchema,
 });
 
-export const briefingSchema = z.object({
-	contactId: notionIdSchema.optional(),
-	dealId: notionIdSchema.optional(),
-}).refine((data) => data.contactId || data.dealId, {
-	message: "contactId or dealId is required",
-});
+export const briefingSchema = z
+	.object({
+		contactId: notionIdSchema.optional(),
+		dealId: notionIdSchema.optional(),
+	})
+	.refine((data) => data.contactId || data.dealId, {
+		message: "contactId or dealId is required",
+	});
 
 export const ghostwriterSchema = z.object({
 	dealId: notionIdSchema,
-	emailType: z.enum(["follow-up", "introduction", "proposal", "negotiation", "check-in"]).optional().default("follow-up"),
+	emailType: z
+		.enum(["follow-up", "introduction", "proposal", "negotiation", "check-in"])
+		.optional()
+		.default("follow-up"),
 	customInstructions: safeText(1000).optional(),
 });
 

@@ -256,6 +256,17 @@ export function DealDialog({ deal, open, onOpenChange, onSave }: DealDialogProps
 											</p>
 											<div className="text-sm leading-relaxed">
 												<Markdown
+													allowedElements={[
+														"p",
+														"strong",
+														"em",
+														"ul",
+														"ol",
+														"li",
+														"br",
+														"a",
+														"code",
+													]}
 													components={{
 														p: ({ children }) => <p className="my-1.5">{children}</p>,
 														strong: ({ children }) => (
