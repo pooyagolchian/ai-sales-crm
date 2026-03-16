@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { callMcpTool, resetMcpClient } from "@/lib/mcp-client";
 import { parseDeal } from "@/lib/notion-helpers";
 import { NOTION_DB, NOTION_DS } from "@/lib/notion-schema";
+import { checkRateLimit, getClientId, RATE_LIMITS } from "@/lib/rate-limit";
+import { createDealSchema, safeErrorMessage } from "@/lib/validation";
 import type { Deal, DealStage } from "@/types";
 
 export const runtime = "nodejs";
@@ -10,8 +12,14 @@ interface NotionQueryResult {
 	results: Array<{ id: string; properties: Record<string, unknown> }>;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
 	try {
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`data:deals:${clientId}`, RATE_LIMITS.data);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+		}
+
 		const result = await callMcpTool<NotionQueryResult>("API-query-data-source", {
 			data_source_id: NOTION_DS.deals,
 		});
@@ -23,19 +31,28 @@ export async function GET() {
 		return NextResponse.json({ deals });
 	} catch (error) {
 		await resetMcpClient();
-		const message = error instanceof Error ? error.message : "Failed to fetch deals";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to fetch deals") },
+			{ status: 500 },
+		);
 	}
 }
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
-		const { name, contactId, stage, value, closeDate, priority, nextAction } = body;
-
-		if (!name) {
-			return NextResponse.json({ error: "Name is required" }, { status: 400 });
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`data:deals:${clientId}`, RATE_LIMITS.data);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 		}
+
+		const body = await request.json();
+		const parsed = createDealSchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+		}
+
+		const { name, contactId, stage, value, closeDate, priority, nextAction } = parsed.data;
 
 		const properties: Record<string, unknown> = {
 			Name: { title: [{ text: { content: name } }] },
@@ -70,7 +87,9 @@ export async function POST(request: Request) {
 		return NextResponse.json({ deal }, { status: 201 });
 	} catch (error) {
 		await resetMcpClient();
-		const message = error instanceof Error ? error.message : "Failed to create deal";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to create deal") },
+			{ status: 500 },
+		);
 	}
 }

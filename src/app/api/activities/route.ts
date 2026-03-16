@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { callMcpTool, resetMcpClient } from "@/lib/mcp-client";
 import { getDate, getRelation, getRichText, getSelect, getTitle } from "@/lib/notion-helpers";
 import { NOTION_DB, NOTION_DS } from "@/lib/notion-schema";
+import { checkRateLimit, getClientId, RATE_LIMITS } from "@/lib/rate-limit";
+import { createActivitySchema, safeErrorMessage } from "@/lib/validation";
 import type { Activity } from "@/types";
 
 export const runtime = "nodejs";
@@ -25,8 +27,14 @@ interface NotionQueryResult {
 	results: Array<{ id: string; properties: Record<string, NotionProperty> }>;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
 	try {
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`data:activities:${clientId}`, RATE_LIMITS.data);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+		}
+
 		const result = await callMcpTool<NotionQueryResult>("API-query-data-source", {
 			data_source_id: NOTION_DS.activities,
 			sorts: [{ property: "Date", direction: "descending" }],
@@ -39,19 +47,28 @@ export async function GET() {
 		return NextResponse.json({ activities });
 	} catch (error) {
 		await resetMcpClient();
-		const message = error instanceof Error ? error.message : "Failed to fetch activities";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to fetch activities") },
+			{ status: 500 },
+		);
 	}
 }
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
-		const { type, date, dealId, summary, rawNotes } = body;
-
-		if (!summary) {
-			return NextResponse.json({ error: "Summary is required" }, { status: 400 });
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`data:activities:${clientId}`, RATE_LIMITS.data);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 		}
+
+		const body = await request.json();
+		const parsed = createActivitySchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+		}
+
+		const { summary, type, date, dealId, rawNotes } = parsed.data;
 
 		const properties: Record<string, unknown> = {
 			Summary: { title: [{ text: { content: summary } }] },
@@ -82,7 +99,9 @@ export async function POST(request: Request) {
 		return NextResponse.json({ activity }, { status: 201 });
 	} catch (error) {
 		await resetMcpClient();
-		const message = error instanceof Error ? error.message : "Failed to create activity";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to create activity") },
+			{ status: 500 },
+		);
 	}
 }

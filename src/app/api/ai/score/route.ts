@@ -3,6 +3,13 @@ import { generateText } from "@/lib/gemini";
 import { callMcpTool, resetMcpClient } from "@/lib/mcp-client";
 import { parseContact } from "@/lib/notion-helpers";
 import { NOTION_DS } from "@/lib/notion-schema";
+import { checkRateLimit, getClientId, RATE_LIMITS } from "@/lib/rate-limit";
+import {
+	leadScoreResponseSchema,
+	parseAiJson,
+	safeErrorMessage,
+	scoreSchema,
+} from "@/lib/validation";
 
 export const runtime = "nodejs";
 
@@ -14,12 +21,19 @@ interface NotionQueryResult {
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
-		const { contactId } = body;
-
-		if (!contactId || typeof contactId !== "string") {
-			return NextResponse.json({ error: "contactId is required" }, { status: 400 });
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`ai:score:${clientId}`, RATE_LIMITS.ai);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 		}
+
+		const body = await request.json();
+		const parsed = scoreSchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+		}
+
+		const { contactId } = parsed.data;
 
 		// Fetch the contact by retrieving the page
 		const contactResult = await callMcpTool<{
@@ -96,18 +110,9 @@ Respond ONLY with valid JSON in this exact format:
 
 		const aiResponse = await generateText(prompt);
 
-		// Parse the AI response
-		const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-		if (!jsonMatch) {
-			return NextResponse.json({ error: "Failed to parse AI response" }, { status: 500 });
-		}
-
-		const parsed = JSON.parse(jsonMatch[0]) as {
-			score: number;
-			reasoning: string;
-		};
-		const score = Math.max(0, Math.min(100, Math.round(parsed.score)));
-		const reasoning = parsed.reasoning;
+		// Parse and validate the AI response with Zod
+		const { score: rawScore, reasoning } = parseAiJson(aiResponse, leadScoreResponseSchema);
+		const score = Math.max(0, Math.min(100, Math.round(rawScore)));
 
 		// Update the contact in Notion with the new score
 		await callMcpTool("API-patch-page", {
@@ -123,7 +128,9 @@ Respond ONLY with valid JSON in this exact format:
 		return NextResponse.json({ score, reasoning });
 	} catch (error) {
 		await resetMcpClient();
-		const message = error instanceof Error ? error.message : "Failed to score lead";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to score lead") },
+			{ status: 500 },
+		);
 	}
 }

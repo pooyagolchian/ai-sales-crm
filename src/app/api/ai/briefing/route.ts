@@ -1,30 +1,39 @@
 import { NextResponse } from "next/server";
 import { generateWithTools } from "@/lib/gemini";
+import { checkRateLimit, getClientId, RATE_LIMITS } from "@/lib/rate-limit";
+import {
+	briefingResponseSchema,
+	briefingSchema,
+	parseAiJson,
+	safeErrorMessage,
+	sanitizeForPrompt,
+} from "@/lib/validation";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
-		const { contactId, dealId } = body as {
-			contactId?: string;
-			dealId?: string;
-		};
-
-		if (!contactId && !dealId) {
-			return NextResponse.json({ error: "contactId or dealId is required" }, { status: 400 });
+		const clientId = getClientId(request);
+		const rateLimit = checkRateLimit(`ai:briefing:${clientId}`, RATE_LIMITS.ai);
+		if (!rateLimit.allowed) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 		}
 
+		const body = await request.json();
+		const parsed = briefingSchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+		}
+
+		const { contactId, dealId } = parsed.data;
 		const entityType = dealId ? "deal" : "contact";
 		const entityId = dealId || contactId;
 
-		const prompt = `Generate a comprehensive pre-call briefing for an upcoming sales call.
+		const prompt = `Generate a pre-call briefing for an upcoming sales call.
 
-Look up the ${entityType} with ID "${entityId}" from Notion and gather all relevant information including:
-- The contact's details (name, role, company, email)
-- All related deals and their stages/values
-- Recent activities and interactions
-- Any notes or context from previous conversations
+Look up the ${entityType} with the following ID from Notion and gather all relevant information including the contact's details, related deals and their stages/values, recent activities and interactions, and any notes from previous conversations.
+
+<entity_id>${sanitizeForPrompt(entityId as string)}</entity_id>
 
 Then produce a briefing in this exact JSON format:
 {
@@ -40,22 +49,18 @@ Respond ONLY with the JSON object, no markdown or extra text.`;
 
 		const response = await generateWithTools(
 			prompt,
-			`You are a sales intelligence AI. You have access to the CRM's Notion database via MCP tools. 
+			`You are a sales intelligence AI. You have access to the CRM's Notion database via MCP tools.
 When looking up data, use the appropriate MCP tools to query the database.
 Always return valid JSON in the exact format requested. Be specific and actionable in your briefing.`,
 		);
 
-		// Parse the JSON response
-		const jsonMatch = response.match(/\{[\s\S]*\}/);
-		if (!jsonMatch) {
-			return NextResponse.json({ error: "Failed to generate briefing" }, { status: 500 });
-		}
-
-		const briefing = JSON.parse(jsonMatch[0]);
+		const briefing = parseAiJson(response, briefingResponseSchema);
 
 		return NextResponse.json(briefing);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : "Failed to generate briefing";
-		return NextResponse.json({ error: message }, { status: 500 });
+		return NextResponse.json(
+			{ error: safeErrorMessage(error, "Failed to generate briefing") },
+			{ status: 500 },
+		);
 	}
 }
