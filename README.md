@@ -21,42 +21,7 @@ RevOps AI consolidates your entire revenue operation into a single platform wher
 
 ### How It Works — Application Flow
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    MARKETING DIRECTOR / MANAGER              │
-│                    (RevOps AI Dashboard)                      │
-└───────────────┬─────────────────────────────────────────────┘
-                │
-    ┌───────────▼───────────┐
-    │   Next.js 15 App      │
-    │   (App Router + API)  │
-    └───────────┬───────────┘
-                │
-    ┌───────────▼───────────┐     ┌──────────────────────────┐
-    │   Gemini 2.5 Flash    │────▶│  Autonomous Tool Choice  │
-    │   (AI Sales Agent)    │     │  via mcpToTool()         │
-    └───────────┬───────────┘     └──────────────────────────┘
-                │
-    ┌───────────▼───────────┐
-    │   MCP Client (SDK)    │
-    │   StreamableHTTP      │
-    └───────────┬───────────┘
-                │
-    ┌───────────▼───────────┐
-    │   Notion MCP Server   │
-    │   (22 tools, HTTP)    │
-    └───────────┬───────────┘
-                │
-    ┌───────────▼───────────┐
-    │      NOTION           │
-    │  ┌────────────────┐   │
-    │  │ Contacts DB    │   │    ← Leads, scores, sources
-    │  │ Deals DB       │   │    ← Pipeline stages, values
-    │  │ Activities DB  │   │    ← Calls, emails, meetings
-    │  │ Companies DB   │   │    ← Organizations, industries
-    │  └────────────────┘   │
-    └───────────────────────┘
-```
+![Application Architecture](docs/screenshots/flow/app-architecture-flow.png)
 
 **The key innovation:** `mcpToTool()` from `@google/genai` auto-maps all 22 Notion MCP tools to Gemini function declarations. Gemini decides **at runtime** which tools to call — query a database, create a page, update a field, search across the workspace — without any hardcoded logic.
 
@@ -64,29 +29,45 @@ RevOps AI consolidates your entire revenue operation into a single platform wher
 
 ## Features
 
-### AI Sales Team Manager
-Chat with your revenue data using natural language. Ask *"What's my pipeline health?"* and the AI autonomously queries Notion, calculates win rates, and surfaces insights. Say *"Create a follow-up for the Acme deal"* and it creates activities linked to the right deal. It's like having a senior sales ops analyst available 24/7.
-
 ### Revenue Dashboard
 Pipeline metrics at a glance: total pipeline value, win rate, deal breakdown by stage, top deals, and recent team activity. All data flows from Notion through MCP in real-time.
+
+![Dashboard](docs/screenshots/desktop/dashboard.png)
 
 ### Visual Deal Pipeline (Kanban)
 Drag-and-drop deals between 6 stages (Lead → Qualified → Proposal → Negotiation → Closed Won → Closed Lost). Every move syncs to Notion instantly via MCP.
 
+![Pipeline](docs/screenshots/desktop/pipeline.png)
+
+Click any deal to edit details, generate AI pre-call briefings, or draft sales emails:
+
+| Deal Details | AI Email Draft |
+|:---:|:---:|
+| ![Deal Detail](docs/screenshots/flow/04-deal-detail.png) | ![Email Draft](docs/screenshots/flow/04c-deal-email.png) |
+
 ### AI Lead Scoring
 One-click AI analysis evaluates a contact's profile (role seniority, company size, engagement history) and assigns a 0-100 score with written reasoning. Scores are persisted back to Notion for your team to see.
 
-### Pre-Call Briefing Generator
-Before any sales call, the AI generates a structured brief: key talking points, potential objections, relationship history, and recommended next steps — all sourced from deal and activity data in Notion.
+![Leads](docs/screenshots/desktop/leads.png)
 
-### Email Ghostwriter
-AI drafts personalized sales emails based on the deal's context, stage, and contact history. No generic templates — each email is contextually unique.
+### Companies
+Organization profiles linked to your contacts and deals — industry, size, website, and more.
 
-### Contact Management
-Full contact CRUD with search, filtering by source, sortable columns, and inline AI scoring. Add new contacts directly from the UI.
+![Companies](docs/screenshots/desktop/companies.png)
+
+### AI Sales Team Manager
+Chat with your revenue data using natural language. Ask *"What's my pipeline health?"* and the AI autonomously queries Notion, calculates win rates, and surfaces insights. Say *"Create a follow-up for the Acme deal"* and it creates activities linked to the right deal.
+
+| Empty State | AI Response |
+|:---:|:---:|
+| ![AI Assistant](docs/screenshots/flow/09-ai-assistant-empty.png) | ![AI Response](docs/screenshots/flow/11-ai-assistant-response.png) |
 
 ### Responsive Design
-Fully responsive with a mobile hamburger menu — manage your pipeline from anywhere.
+Fully responsive across desktop, tablet, and mobile — manage your pipeline from anywhere.
+
+| Desktop | Tablet | Mobile |
+|:---:|:---:|:---:|
+| ![Desktop](docs/screenshots/desktop/dashboard.png) | ![Tablet](docs/screenshots/tablet/dashboard.png) | ![Mobile](docs/screenshots/mobile/dashboard.png) |
 
 ---
 
