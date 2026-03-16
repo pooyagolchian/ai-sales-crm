@@ -4,6 +4,8 @@
 
 Built for the [Notion MCP Challenge](https://dev.to/challenges/notion-2026-03-04).
 
+[![Demo Video](https://img.shields.io/badge/Demo-YouTube-red?logo=youtube)](https://youtu.be/nK-Te39bsS0) [![GitHub](https://img.shields.io/badge/Source-GitHub-black?logo=github)](https://github.com/pooyagolchian/ai-sales-crm)
+
 ---
 
 ## The Problem
@@ -132,8 +134,8 @@ The **Model Context Protocol** solves the AI-to-tool connection problem:
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/revops-ai.git
-   cd revops-ai
+   git clone https://github.com/pooyagolchian/ai-sales-crm.git
+   cd ai-sales-crm
    pnpm install
    ```
 
