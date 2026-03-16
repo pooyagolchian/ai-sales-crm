@@ -2,7 +2,7 @@
 // Notion Response Parsing Helpers
 // ============================================================
 
-import type { Contact, Deal, DealStage, Priority } from "@/types";
+import type { Company, Contact, Deal, DealStage, Priority } from "@/types";
 
 type NotionProperty = Record<string, unknown>;
 
@@ -77,6 +77,21 @@ export function parseContact(page: {
 		leadScore: getNumber(p, "Lead Score"),
 		leadScoreNotes: getRichText(p, "Lead Score Notes"),
 		source: getSelect(p, "Source"),
+	};
+}
+
+// -- Parse a Notion page object into a Company --
+export function parseCompany(page: {
+	id: string;
+	properties: Record<string, NotionProperty>;
+}): Company {
+	const p = page.properties;
+	return {
+		id: page.id,
+		name: getTitle(p, "Name"),
+		industry: getSelect(p, "Industry"),
+		size: getSelect(p, "Size"),
+		website: getUrl(p, "Website"),
 	};
 }
 

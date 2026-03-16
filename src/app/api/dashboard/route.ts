@@ -24,7 +24,7 @@ const STAGE_WEIGHTS: Record<DealStage, number> = {
 
 export async function GET() {
 	try {
-		const [dealsResult, contactsResult, activitiesResult] = await Promise.all([
+		const [dealsResult, contactsResult, activitiesResult, companiesResult] = await Promise.all([
 			callMcpTool<NotionQueryResult>("API-query-data-source", {
 				data_source_id: NOTION_DS.deals,
 			}),
@@ -35,6 +35,9 @@ export async function GET() {
 				data_source_id: NOTION_DS.activities,
 				sorts: [{ property: "Date", direction: "descending" }],
 				page_size: 5,
+			}),
+			callMcpTool<NotionQueryResult>("API-query-data-source", {
+				data_source_id: NOTION_DS.companies,
 			}),
 		]);
 
@@ -100,12 +103,15 @@ export async function GET() {
 		// Top contacts by lead score
 		const topContacts = [...contacts].sort((a, b) => b.leadScore - a.leadScore).slice(0, 5);
 
+		const totalCompanies = companiesResult?.results?.length ?? 0;
+
 		return NextResponse.json({
 			metrics,
 			activeDeals,
 			topContacts,
 			recentActivities,
 			totalContacts: contacts.length,
+			totalCompanies,
 		});
 	} catch (error) {
 		await resetMcpClient();

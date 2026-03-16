@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Kanban, LayoutDashboard, Menu, Users } from "lucide-react";
+import { Bot, Building2, Kanban, LayoutDashboard, Menu, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
 	{ href: "/", label: "Dashboard", icon: LayoutDashboard },
 	{ href: "/pipeline", label: "Pipeline", icon: Kanban },
 	{ href: "/leads", label: "Leads", icon: Users },
+	{ href: "/companies", label: "Companies", icon: Building2 },
 	{ href: "/assistant", label: "AI Assistant", icon: Bot },
 ] as const;
 

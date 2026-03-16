@@ -32,6 +32,7 @@ interface DashboardData {
 		date: string;
 	}>;
 	totalContacts: number;
+	totalCompanies: number;
 }
 
 const STAGE_COLORS: Record<DealStage, string> = {
@@ -116,7 +117,8 @@ export function DashboardClient() {
 		);
 	}
 
-	const { metrics, activeDeals, topContacts, recentActivities, totalContacts } = data;
+	const { metrics, activeDeals, topContacts, recentActivities, totalContacts, totalCompanies } =
+		data;
 
 	return (
 		<div className="space-y-6">
@@ -130,7 +132,7 @@ export function DashboardClient() {
 				<MetricCard
 					title="Total Deals"
 					value={metrics.totalDeals}
-					description={`${totalContacts} contacts in CRM`}
+					description={`${totalContacts} contacts · ${totalCompanies} companies`}
 					icon={<Target className="h-4 w-4" />}
 				/>
 				<MetricCard
